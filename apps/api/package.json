@@ -1,0 +1,41 @@
+{
+  "name": "@tt/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "lint": "eslint src --ext .ts",
+    "seed:admin": "tsx src/scripts/seed-admin.ts",
+    "seed:demo": "tsx src/scripts/seed-demo.ts",
+    "seed:demo:reset": "tsx src/scripts/seed-demo.ts --reset",
+    "backfill:entry-source": "tsx src/scripts/backfill-entry-source.ts",
+    "migrate:manager-to-admin": "tsx src/scripts/migrate-manager-to-admin.ts"
+  },
+  "dependencies": {
+    "@tt/shared": "workspace:*",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^5.0.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.8.0",
+    "morgan": "^1.10.0",
+    "socket.io": "^4.8.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^22.9.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

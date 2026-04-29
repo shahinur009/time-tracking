@@ -3,15 +3,9 @@ const nextConfig = {
     reactStrictMode: true,
     devIndicators: false,
     transpilePackages: ['@tt/shared'],
-    redirects: async () => {
-        return [
-            {
-                source: '/',
-                destination: '/tracker',
-                permanent: false,
-            },
-        ];
-    },
+    output: 'export',
+    trailingSlash: true,
+    images: { unoptimized: true },
 };
 
 module.exports = nextConfig;

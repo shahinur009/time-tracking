@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AutoComplete, Dropdown, Tag, Popover, Checkbox } from 'antd';
-import { Tag as TagIcon, Plus, MoreVertical } from 'lucide-react';
+import { Tag as TagIcon, Plus, MoreVertical, X } from 'lucide-react';
 import {
     useCurrentEntry,
     useStartEntry,
@@ -14,9 +14,11 @@ import {
 } from '../../api/queries/projects';
 import { useClients } from '../../api/queries/clients';
 import { useTags, useCreateTag } from '../../api/queries/tags';
+import { useClickupStatus } from '../../api/queries/clickup';
 import useAuth from '../../hooks/useAuth';
 import SearchablePicker from './SearchablePicker';
 import ProjectPicker from './ProjectPicker';
+import ClickUpTaskPicker from './ClickUpTaskPicker';
 import ProjectForm from '../../Modals/ProjectForm';
 import CreateTaskModal from '../../Modals/CreateTaskModal';
 import ClientProjectsModal from '../../Modals/ClientProjectsModal';
@@ -37,6 +39,8 @@ function TimerBar() {
     const toggleFav = useToggleProjectFavorite();
     const start = useStartEntry();
     const stop = useStopEntry();
+    const { data: cuStatus } = useClickupStatus();
+    const cuConnected = !!cuStatus?.connected;
 
     const [description, setDescription] = useState('');
     const [projectId, setProjectId] = useState(null);
@@ -49,6 +53,8 @@ function TimerBar() {
     const [projectFormOpen, setProjectFormOpen] = useState(false);
     const [taskProject, setTaskProject] = useState(null);
     const [clientModal, setClientModal] = useState(null);
+    const [clickupTask, setClickupTask] = useState(null);
+    const [cuPickerOpen, setCuPickerOpen] = useState(false);
 
     const running = current && current.status === 'running' ? current : null;
     const seconds = useTimer(running?.startTime);
@@ -59,16 +65,38 @@ function TimerBar() {
             setProjectId(running.projectId?._id || running.projectId || null);
             setBillable(!!running.billable);
             setTagIds((running.tags || []).map((t) => t._id || t));
+            if (running.clickupTaskId) {
+                setClickupTask({
+                    clickupTaskId: running.clickupTaskId,
+                    name: running.clickupTaskTitle,
+                    clickupListId: running.clickupListId,
+                    clickupSpaceId: running.clickupSpaceId,
+                    clickupTeamId: running.clickupTeamId,
+                });
+            } else {
+                setClickupTask(null);
+            }
         } else {
             setDescription('');
             setProjectId(null);
             setBillable(false);
             setTagIds([]);
+            setClickupTask(null);
         }
     }, [running?._id]);
 
     const onStart = () =>
-        start.mutate({ description, projectId, billable, tags: tagIds });
+        start.mutate({
+            description,
+            projectId,
+            billable,
+            tags: tagIds,
+            clickupTaskId: clickupTask?.clickupTaskId,
+            clickupTaskTitle: clickupTask?.name,
+            clickupListId: clickupTask?.clickupListId,
+            clickupSpaceId: clickupTask?.clickupSpaceId,
+            clickupTeamId: clickupTask?.clickupTeamId,
+        });
 
     const requestStop = () => {
         if ('Notification' in window && Notification.permission === 'granted') {
@@ -161,6 +189,68 @@ function TimerBar() {
                         ),
                     }))}
                 />
+                {cuConnected && (
+                    <Popover
+                        trigger="click"
+                        open={cuPickerOpen}
+                        onOpenChange={setCuPickerOpen}
+                        placement="bottomRight"
+                        autoAdjustOverflow={false}
+                        overlayInnerStyle={{
+                            padding: 0,
+                            borderRadius: 8,
+                            boxShadow: '0 6px 24px rgba(0,0,0,0.12)',
+                        }}
+                        content={
+                            <ClickUpTaskPicker
+                                value={clickupTask?.clickupTaskId}
+                                onSelect={(task) => {
+                                    setClickupTask({
+                                        clickupTaskId: task.clickupTaskId,
+                                        name: task.name,
+                                        clickupListId: task.clickupListId,
+                                        clickupSpaceId: task.clickupSpaceId,
+                                        clickupTeamId: task.clickupTeamId,
+                                    });
+                                    if (!description) setDescription(task.name);
+                                    setCuPickerOpen(false);
+                                }}
+                            />
+                        }
+                    >
+                        <button type="button" style={cuPickBtn(!!clickupTask)}>
+                            {clickupTask ? (
+                                <>
+                                    <span
+                                        style={{
+                                            maxWidth: 180,
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                        }}
+                                    >
+                                        CU: {clickupTask.name}
+                                    </span>
+                                    <span
+                                        role="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setClickupTask(null);
+                                        }}
+                                        style={{ display: 'inline-flex', cursor: 'pointer' }}
+                                    >
+                                        <X size={12} />
+                                    </span>
+                                </>
+                            ) : (
+                                <>
+                                    <Plus size={12} /> ClickUp task
+                                </>
+                            )}
+                        </button>
+                    </Popover>
+                )}
+
                 <Popover
                     trigger="click"
                     open={projectOpen}
@@ -538,5 +628,21 @@ const iconBtn = {
     borderRadius: 3,
     transition: 'background 180ms ease',
 };
+
+function cuPickBtn(active) {
+    return {
+        background: active ? '#e6f4ff' : 'transparent',
+        border: active ? '1px solid #91caff' : '1px dashed #bfbfbf',
+        color: active ? '#1677ff' : '#8c8c8c',
+        cursor: 'pointer',
+        borderRadius: 3,
+        padding: '4px 10px',
+        fontSize: 12,
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        height: 28,
+    };
+}
 
 export default TimerBar;

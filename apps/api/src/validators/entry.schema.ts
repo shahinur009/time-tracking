@@ -7,6 +7,9 @@ export const startEntrySchema = z.object({
   taggedUsers: z.array(z.string()).optional(),
   clickupTaskId: z.string().optional(),
   clickupTaskTitle: z.string().optional(),
+  clickupListId: z.string().optional(),
+  clickupSpaceId: z.string().optional(),
+  clickupTeamId: z.string().optional(),
 });
 
 export const stopEntrySchema = z.object({

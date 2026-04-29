@@ -26,6 +26,7 @@ import {
 } from '../../api/queries/entries';
 import { useProjects } from '../../api/queries/projects';
 import { useTags, useCreateTag } from '../../api/queries/tags';
+import { usePushEntryToClickup } from '../../api/queries/clickup';
 import useAuth from '../../hooks/useAuth';
 import SearchablePicker from './SearchablePicker';
 
@@ -65,6 +66,7 @@ function EntryList({ entries = [] }) {
     const update = useUpdateEntry();
     const startEntry = useStartEntry();
     const deleteEntry = useDeleteEntry();
+    const pushEntry = usePushEntryToClickup();
     const [expanded, setExpanded] = useState(() => new Set());
 
     const finished = entries.filter((e) => e.status === 'finished');
@@ -215,6 +217,10 @@ function EntryList({ entries = [] }) {
                                         onDelete={() =>
                                             deleteEntry.mutate(first._id)
                                         }
+                                        onPushClickup={() =>
+                                            pushEntry.mutate(first._id)
+                                        }
+                                        pushing={pushEntry.isLoading}
                                     />
                                     {isOpen &&
                                         count > 1 &&
@@ -237,6 +243,10 @@ function EntryList({ entries = [] }) {
                                                 onDelete={() =>
                                                     deleteEntry.mutate(entry._id)
                                                 }
+                                                onPushClickup={() =>
+                                                    pushEntry.mutate(entry._id)
+                                                }
+                                                pushing={pushEntry.isLoading}
                                             />
                                         ))}
                                 </div>
@@ -264,6 +274,8 @@ function EntryRow({
     onUpdate,
     onRestart,
     onDelete,
+    onPushClickup,
+    pushing,
 }) {
     const projectId = entry.projectId?._id || entry.projectId || null;
     const projectColor = entry.projectId?.color || '#8C8C8C';
@@ -713,6 +725,33 @@ function EntryRow({
                 <Tag color="blue" style={{ marginLeft: 8 }}>
                     CU: {entry.clickupTaskTitle}
                 </Tag>
+            )}
+
+            {entry.clickupTaskId && entry.status === 'finished' && (
+                entry.pushedToClickup ? (
+                    <Tag color="green" style={{ marginLeft: 4 }}>
+                        Pushed
+                    </Tag>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={onPushClickup}
+                        disabled={pushing}
+                        style={{
+                            background: '#1677ff',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: 3,
+                            padding: '4px 10px',
+                            fontSize: 11,
+                            cursor: pushing ? 'wait' : 'pointer',
+                            marginLeft: 4,
+                        }}
+                        title="Push this entry's time to ClickUp"
+                    >
+                        {pushing ? 'Pushing…' : 'Push to ClickUp'}
+                    </button>
+                )
             )}
             </div>
         </div>

@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
-import { Form, Input, Button, Typography, Divider, Flex, Tooltip } from 'antd';
+import { Form, Input, Button, Typography, Divider, Flex } from 'antd';
 import Logo from '@/Components/Logo';
 import useAuth from '@/hooks/useAuth';
 import { useLogin } from '@/api/queries/auth';
+import { clickup } from '@/api/services/clickup';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -36,16 +37,17 @@ function Login() {
                     Welcome back
                 </Paragraph>
 
-                <Tooltip title="Available in phase 2">
-                    <Button
-                        block
-                        size="large"
-                        disabled
-                        style={{ marginTop: 16 }}
-                    >
-                        Sign in with ClickUp (coming soon)
-                    </Button>
-                </Tooltip>
+                <Button
+                    block
+                    size="large"
+                    type="primary"
+                    style={{ marginTop: 16 }}
+                    onClick={() => {
+                        window.location.href = clickup.authorizeUrl;
+                    }}
+                >
+                    Sign in with ClickUp
+                </Button>
 
                 <Divider>
                     <Text type="secondary">OR</Text>

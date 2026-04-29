@@ -1,0 +1,15 @@
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+**/.git
+**/.env
+**/.env.local
+**/.env.*.local
+**/coverage
+**/*.log
+apps/web
+clockify-img
+photo.jpeg
+PROJECT_PLAN.md
+README.md

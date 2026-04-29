@@ -27,5 +27,6 @@ router.post(
 );
 router.patch('/:id', asyncHandler(ctrl.updateEntry));
 router.delete('/:id', requireAdmin, asyncHandler(ctrl.deleteEntry));
+router.post('/:id/push-clickup', asyncHandler(ctrl.pushToClickup));
 
 export default router;

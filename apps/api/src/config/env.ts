@@ -25,6 +25,21 @@ export const env = {
   CLICKUP_CLIENT_SECRET: process.env.CLICKUP_CLIENT_SECRET || '',
   CLICKUP_REDIRECT_URI: process.env.CLICKUP_REDIRECT_URI || '',
   CLICKUP_TOKEN_ENC_KEY: process.env.CLICKUP_TOKEN_ENC_KEY || '',
+
+  WEB_URL: process.env.WEB_URL || 'http://localhost:3000',
+  CLICKUP_API_BASE:
+    process.env.CLICKUP_API_BASE || 'https://api.clickup.com/api/v2',
+  CLICKUP_AUTHORIZE_URL:
+    process.env.CLICKUP_AUTHORIZE_URL || 'https://app.clickup.com/api',
 };
 
 export const isProd = env.NODE_ENV === 'production';
+
+export function clickupConfigured(): boolean {
+  return Boolean(
+    env.CLICKUP_CLIENT_ID &&
+      env.CLICKUP_CLIENT_SECRET &&
+      env.CLICKUP_REDIRECT_URI &&
+      env.CLICKUP_TOKEN_ENC_KEY,
+  );
+}

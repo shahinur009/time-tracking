@@ -9,6 +9,7 @@ import reports from './report.routes';
 import calendar from './calendar.routes';
 import timesheet from './timesheet.routes';
 import team from './team.routes';
+import clickup from './clickup.routes';
 
 const router = Router();
 
@@ -23,12 +24,14 @@ router.get('/', (_req, res) => {
       '/auth',
       '/users',
       '/projects',
+      '/clients',
       '/tags',
       '/entries',
       '/reports',
       '/calendar',
       '/timesheet',
       '/team',
+      '/clickup',
     ],
   });
 });
@@ -47,5 +50,6 @@ router.use('/reports', reports);
 router.use('/calendar', calendar);
 router.use('/timesheet', timesheet);
 router.use('/team', team);
+router.use('/clickup', clickup);
 
 export default router;

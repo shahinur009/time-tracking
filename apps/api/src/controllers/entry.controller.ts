@@ -5,6 +5,7 @@ import { User } from '../models/User';
 import { ApiError } from '../utils/ApiError';
 import { AuditLog } from '../models/AuditLog';
 import { emitToAdmins } from '../socket';
+import { loadTokenForUser, postTimeEntry } from '../services/clickup';
 
 async function emitTimerStarted(entryId: string): Promise<void> {
   try {
@@ -103,6 +104,9 @@ export async function startEntry(req: Request, res: Response): Promise<void> {
     taggedUsers: req.body.taggedUsers || [],
     clickupTaskId: req.body.clickupTaskId,
     clickupTaskTitle: req.body.clickupTaskTitle,
+    clickupListId: req.body.clickupListId,
+    clickupSpaceId: req.body.clickupSpaceId,
+    clickupTeamId: req.body.clickupTeamId,
     startTime: now,
     status: 'running',
   });
@@ -237,4 +241,40 @@ export async function deleteEntry(req: Request, res: Response): Promise<void> {
   });
 
   res.json({ status: 'success', message: 'Entry deleted' });
+}
+
+export async function pushToClickup(req: Request, res: Response): Promise<void> {
+  const entry = await TimeEntry.findById(req.params.id);
+  if (!entry) throw new ApiError(404, 'Entry not found');
+
+  if (entry.userId.toString() !== req.user!.id && req.user!.role !== 'admin') {
+    throw new ApiError(403, 'Cannot push another user\'s entry');
+  }
+  if (entry.status !== 'finished' || !entry.endTime) {
+    throw new ApiError(400, 'Only finished entries can be pushed');
+  }
+  if (!entry.clickupTaskId) {
+    throw new ApiError(400, 'Entry has no clickupTaskId');
+  }
+
+  const ownerId = entry.userId.toString();
+  const t = await loadTokenForUser(ownerId);
+  if (!t) throw new ApiError(409, 'Owner has no ClickUp connection');
+
+  const teamId = entry.clickupTeamId || t.teamId;
+  if (!teamId) throw new ApiError(400, 'No clickupTeamId on entry or user');
+
+  const result = await postTimeEntry(t.token, teamId, {
+    start: entry.startTime.getTime(),
+    duration: entry.duration * 1000,
+    tid: entry.clickupTaskId,
+    description: entry.description || '',
+  });
+
+  entry.pushedToClickup = true;
+  entry.pushedToClickupAt = new Date();
+  entry.clickupTimeEntryId = result.id;
+  await entry.save();
+
+  res.json({ status: 'success', data: entry });
 }

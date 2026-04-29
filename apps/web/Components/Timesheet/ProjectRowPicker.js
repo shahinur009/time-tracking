@@ -6,7 +6,7 @@ import {
     useToggleProjectFavorite,
     useCreateProject,
     useAddProjectTask,
-} from '@/api/queries/projects';
+} from '@/lib/queries/projects';
 import useAuth from '@/hooks/useAuth';
 import ProjectForm from '@/Modals/ProjectForm';
 

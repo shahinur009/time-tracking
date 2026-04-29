@@ -4,11 +4,11 @@ import { MoreHorizontal, Trash2 } from 'lucide-react';
 import dayjs from 'dayjs';
 import { format, parse } from 'date-fns';
 import { formatHMS, parseHMS } from './CellInput';
-import { useTags } from '@/api/queries/tags';
-import { useProjects } from '@/api/queries/projects';
-import { useEntry, useUpdateEntry, useDeleteEntry } from '@/api/queries/entries';
-import { useUpsertCell } from '@/api/queries/timesheet';
-import { useUsers } from '@/api/queries/users';
+import { useTags } from '@/lib/queries/tags';
+import { useProjects } from '@/lib/queries/projects';
+import { useEntry, useUpdateEntry, useDeleteEntry } from '@/lib/queries/entries';
+import { useUpsertCell } from '@/lib/queries/timesheet';
+import { useUsers } from '@/lib/queries/users';
 import useAuth from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 

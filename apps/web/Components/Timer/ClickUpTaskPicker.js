@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Empty, Spin, Tag, Input } from 'antd';
 import { Search } from 'lucide-react';
-import { useClickupTasks } from '../../api/queries/clickup';
+import { useClickupTasks } from '../../lib/queries/clickup';
 
 function useDebounced(value, delay = 250) {
     const [v, setV] = useState(value);

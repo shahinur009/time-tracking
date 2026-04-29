@@ -3,7 +3,7 @@ import { Calendar as AntCalendar, Typography, Badge, Card, List } from 'antd';
 import dayjs from 'dayjs';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import withAuth from '@/hoc/withAuth';
-import { useCalendar } from '@/api/queries/reports';
+import { useCalendar } from '@/lib/queries/reports';
 import { formatDuration } from '@/utils/format';
 
 const { Title, Text } = Typography;

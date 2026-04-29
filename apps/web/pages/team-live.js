@@ -3,7 +3,7 @@ import { Typography, Empty, Tag, Tooltip, Badge } from 'antd';
 import { useQueryClient } from 'react-query';
 import withAdmin from '@/hoc/withAdmin';
 import Loading from '@/Components/Loading';
-import { useTeamLive } from '@/api/queries/team';
+import { useTeamLive } from '@/lib/queries/team';
 import { useSocket, useSocketEvent } from '@/context/SocketContext';
 import { formatDuration, secondsBetween } from '@/utils/format';
 

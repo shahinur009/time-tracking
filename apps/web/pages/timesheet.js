@@ -18,8 +18,8 @@ import {
     useDeleteTimesheetRow,
     useCopyWeek,
     useCreateTemplate,
-} from '@/api/queries/timesheet';
-import { useUsers } from '@/api/queries/users';
+} from '@/lib/queries/timesheet';
+import { useUsers } from '@/lib/queries/users';
 import { useToast } from '@/hooks/useToast';
 import useAuth from '@/hooks/useAuth';
 

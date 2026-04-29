@@ -1,6 +1,6 @@
 import TimerBar from '@/Components/Timer/TimerBar';
 import EntryList from '@/Components/Timer/EntryList';
-import { useEntries } from '@/api/queries/entries';
+import { useEntries } from '@/lib/queries/entries';
 import withAuth from '@/hoc/withAuth';
 import Loading from '@/Components/Loading';
 import { startOfWeek, endOfDay } from 'date-fns';

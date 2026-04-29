@@ -69,11 +69,11 @@ import {
     useSummaryReport,
     useDetailedReport,
     useWeeklyReport,
-} from '@/api/queries/reports';
-import { useProjects } from '@/api/queries/projects';
-import { useTags } from '@/api/queries/tags';
-import { useClients } from '@/api/queries/clients';
-import { useUsers } from '@/api/queries/users';
+} from '@/lib/queries/reports';
+import { useProjects } from '@/lib/queries/projects';
+import { useTags } from '@/lib/queries/tags';
+import { useClients } from '@/lib/queries/clients';
+import { useUsers } from '@/lib/queries/users';
 import usePagination from '@/hooks/usePagination';
 import { formatDuration } from '@/utils/format';
 

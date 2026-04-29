@@ -45,12 +45,12 @@ import {
 import withAuth from '@/hoc/withAuth';
 import Loading from '@/Components/Loading';
 import useAuth from '@/hooks/useAuth';
-import { useSummaryReport } from '@/api/queries/reports';
+import { useSummaryReport } from '@/lib/queries/reports';
 import {
     useCurrentEntry,
     useStartEntry,
     useStopEntry,
-} from '@/api/queries/entries';
+} from '@/lib/queries/entries';
 import { useTimer } from '@/hooks/useTimer';
 import { formatDuration } from '@/utils/format';
 import DayDetailsModal from '@/Modals/DayDetailsModal';

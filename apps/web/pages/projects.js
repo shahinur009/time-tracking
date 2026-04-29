@@ -9,7 +9,7 @@ import {
     useCreateProject,
     useUpdateProject,
     useDeleteProject,
-} from '@/api/queries/projects';
+} from '@/lib/queries/projects';
 
 const { Title } = Typography;
 

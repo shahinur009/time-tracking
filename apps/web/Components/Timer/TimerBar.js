@@ -5,16 +5,16 @@ import {
     useCurrentEntry,
     useStartEntry,
     useStopEntry,
-} from '../../api/queries/entries';
+} from '../../lib/queries/entries';
 import {
     useProjects,
     useCreateProject,
     useAddProjectTask,
     useToggleProjectFavorite,
-} from '../../api/queries/projects';
-import { useClients } from '../../api/queries/clients';
-import { useTags, useCreateTag } from '../../api/queries/tags';
-import { useClickupStatus } from '../../api/queries/clickup';
+} from '../../lib/queries/projects';
+import { useClients } from '../../lib/queries/clients';
+import { useTags, useCreateTag } from '../../lib/queries/tags';
+import { useClickupStatus } from '../../lib/queries/clickup';
 import useAuth from '../../hooks/useAuth';
 import SearchablePicker from './SearchablePicker';
 import ProjectPicker from './ProjectPicker';

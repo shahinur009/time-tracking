@@ -17,8 +17,8 @@ import {
     useClickupSync,
     useClickupDisconnect,
     useClickupConnectToken,
-} from '@/api/queries/clickup';
-import { clickup } from '@/api/services/clickup';
+} from '@/lib/queries/clickup';
+import { clickup } from '@/lib/services/clickup';
 
 const { Title, Text, Paragraph } = Typography;
 

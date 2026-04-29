@@ -4,7 +4,7 @@ import { useQueryClient } from 'react-query';
 import { Result, Spin } from 'antd';
 import persister from '@/utils/persister';
 import { AuthKey } from '@/utils/consts';
-import { auth } from '@/api/services/auth';
+import { auth } from '@/lib/services/auth';
 
 export default function ClickUpCallback() {
     const router = useRouter();

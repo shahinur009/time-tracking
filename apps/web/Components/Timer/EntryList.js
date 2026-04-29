@@ -23,10 +23,10 @@ import {
     useUpdateEntry,
     useStartEntry,
     useDeleteEntry,
-} from '../../api/queries/entries';
-import { useProjects } from '../../api/queries/projects';
-import { useTags, useCreateTag } from '../../api/queries/tags';
-import { usePushEntryToClickup } from '../../api/queries/clickup';
+} from '../../lib/queries/entries';
+import { useProjects } from '../../lib/queries/projects';
+import { useTags, useCreateTag } from '../../lib/queries/tags';
+import { usePushEntryToClickup } from '../../lib/queries/clickup';
 import useAuth from '../../hooks/useAuth';
 import SearchablePicker from './SearchablePicker';
 

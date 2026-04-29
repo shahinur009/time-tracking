@@ -4,7 +4,7 @@ import { Info, ChevronDown } from 'lucide-react';
 import { PROJECT_COLORS } from '../utils/consts';
 import ColorSwatch from '../Components/ColorSwatch';
 import SearchablePicker from '../Components/Timer/SearchablePicker';
-import { useClients, useCreateClient } from '../api/queries/clients';
+import { useClients, useCreateClient } from '../lib/queries/clients';
 
 function ProjectForm({ open, initial, onCancel, onSubmit, loading }) {
     const { data: clients = [] } = useClients();

@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { Form, Input, Button, Typography, Flex, Alert } from 'antd';
 import Logo from '@/Components/Logo';
 import useAuth from '@/hooks/useAuth';
-import { useRegister } from '@/api/queries/auth';
+import { useRegister } from '@/lib/queries/auth';
 
 const { Title, Paragraph, Text } = Typography;
 

@@ -4,8 +4,8 @@ import { useEffect } from 'react';
 import { Form, Input, Button, Typography, Divider, Flex } from 'antd';
 import Logo from '@/Components/Logo';
 import useAuth from '@/hooks/useAuth';
-import { useLogin } from '@/api/queries/auth';
-import { clickup } from '@/api/services/clickup';
+import { useLogin } from '@/lib/queries/auth';
+import { clickup } from '@/lib/services/clickup';
 
 const { Title, Paragraph, Text } = Typography;
 

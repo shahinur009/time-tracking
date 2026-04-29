@@ -8,7 +8,7 @@ import {
     useCreateUser,
     useUpdateUserRole,
     useDeleteUser,
-} from '@/api/queries/users';
+} from '@/lib/queries/users';
 import useAuth from '@/hooks/useAuth';
 
 const { Title } = Typography;

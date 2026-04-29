@@ -60,9 +60,10 @@ userSchema.set('toJSON', {
   virtuals: true,
   versionKey: false,
   transform(_doc, ret) {
-    delete (ret as Record<string, unknown>).password;
-    delete (ret as Record<string, unknown>).clickupAccessToken;
-    return ret;
+    const r = ret as unknown as Record<string, unknown>;
+    delete r.password;
+    delete r.clickupAccessToken;
+    return r;
   },
 });
 

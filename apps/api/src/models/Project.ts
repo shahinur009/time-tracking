@@ -13,7 +13,7 @@ export interface IProject extends Document {
   description?: string;
   clientId?: Types.ObjectId | null;
   isPublic: boolean;
-  tasks: IProjectTask[];
+  tasks: Types.DocumentArray<IProjectTask>;
   createdBy: Types.ObjectId;
   members: Types.ObjectId[];
   archived: boolean;

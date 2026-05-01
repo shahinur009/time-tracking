@@ -5,7 +5,12 @@ import { User } from '../models/User';
 import { ApiError } from '../utils/ApiError';
 import { AuditLog } from '../models/AuditLog';
 import { emitToAdmins } from '../socket';
-import { loadTokenForUser, postTimeEntry } from '../services/clickup';
+import {
+  loadTokenForUser,
+  postTimeEntry,
+  putTimeEntry,
+  deleteTimeEntry as cuDeleteTimeEntry,
+} from '../services/clickup';
 
 async function emitTimerStarted(entryId: string): Promise<void> {
   try {
@@ -117,7 +122,7 @@ export async function startEntry(req: Request, res: Response): Promise<void> {
 }
 
 export async function stopEntry(req: Request, res: Response): Promise<void> {
-  const { done } = req.body;
+  const { done, skipPush } = req.body as { done?: boolean; skipPush?: boolean };
   if (done !== true) {
     throw new ApiError(400, 'Stop requires { done: true } to finalize entry');
   }
@@ -136,7 +141,41 @@ export async function stopEntry(req: Request, res: Response): Promise<void> {
 
   emitTimerStopped(running.id, req.user!.id, running.duration);
 
+  if (running.clickupTaskId && skipPush !== true) {
+    autoPushIfEnabled(running.id, req.user!.id).catch((err) =>
+      console.error('[entry] auto-push failed', err),
+    );
+  }
+
   res.json({ status: 'success', data: running });
+}
+
+async function autoPushIfEnabled(entryId: string, userId: string): Promise<void> {
+  const user = await User.findById(userId).select('autoPushToClickup');
+  if (!user?.autoPushToClickup) return;
+
+  const entry = await TimeEntry.findById(entryId);
+  if (!entry || !entry.clickupTaskId || entry.pushedToClickup) return;
+
+  const t = await loadTokenForUser(userId);
+  if (!t) return;
+  const teamId = entry.clickupTeamId || t.teamId;
+  if (!teamId) return;
+
+  try {
+    const result = await postTimeEntry(t.token, teamId, {
+      start: entry.startTime.getTime(),
+      duration: entry.duration * 1000,
+      tid: entry.clickupTaskId,
+      description: entry.description || '',
+    });
+    entry.pushedToClickup = true;
+    entry.pushedToClickupAt = new Date();
+    entry.clickupTimeEntryId = result.id;
+    await entry.save();
+  } catch (err) {
+    console.error('[entry] autoPush postTimeEntry failed', err);
+  }
 }
 
 export async function currentRunning(req: Request, res: Response): Promise<void> {
@@ -218,6 +257,12 @@ export async function updateEntry(req: Request, res: Response): Promise<void> {
 
   await entry.save();
 
+  if (entry.clickupTimeEntryId && entry.clickupTeamId) {
+    propagateEntryUpdate(entry.id).catch((err) =>
+      console.error('[entry] update propagation failed', err),
+    );
+  }
+
   await AuditLog.create({
     actorId: req.user!.id,
     action: 'entry.update',
@@ -229,9 +274,40 @@ export async function updateEntry(req: Request, res: Response): Promise<void> {
   res.json({ status: 'success', data: entry });
 }
 
+async function propagateEntryUpdate(entryId: string): Promise<void> {
+  const entry = await TimeEntry.findById(entryId);
+  if (!entry || !entry.clickupTimeEntryId || !entry.clickupTeamId) return;
+  const t = await loadTokenForUser(entry.userId.toString());
+  if (!t) return;
+  await putTimeEntry(t.token, entry.clickupTeamId, entry.clickupTimeEntryId, {
+    start: entry.startTime.getTime(),
+    end: entry.endTime ? entry.endTime.getTime() : undefined,
+    duration: entry.duration * 1000,
+    description: entry.description || '',
+    tid: entry.clickupTaskId,
+  });
+}
+
 export async function deleteEntry(req: Request, res: Response): Promise<void> {
-  const entry = await TimeEntry.findByIdAndDelete(req.params.id);
+  const entry = await TimeEntry.findById(req.params.id);
   if (!entry) throw new ApiError(404, 'Entry not found');
+
+  if (entry.clickupTimeEntryId && entry.clickupTeamId) {
+    const t = await loadTokenForUser(entry.userId.toString());
+    if (t) {
+      try {
+        await cuDeleteTimeEntry(
+          t.token,
+          entry.clickupTeamId,
+          entry.clickupTimeEntryId,
+        );
+      } catch (err) {
+        console.error('[entry] delete propagation failed', err);
+      }
+    }
+  }
+
+  await TimeEntry.findByIdAndDelete(req.params.id);
 
   await AuditLog.create({
     actorId: req.user!.id,

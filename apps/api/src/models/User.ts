@@ -15,6 +15,9 @@ export interface IUser extends Document {
   clickupTeamId?: string;
   clickupAccessToken?: string;
   clickupConnectedAt?: Date;
+  clickupWebhookId?: string;
+  autoPushToClickup: boolean;
+  lastEntrySyncAt?: Date;
 
   lastActiveAt?: Date;
   createdAt: Date;
@@ -50,6 +53,9 @@ const userSchema = new Schema<IUser>(
     clickupTeamId: { type: String },
     clickupAccessToken: { type: String, select: false },
     clickupConnectedAt: { type: Date },
+    clickupWebhookId: { type: String },
+    autoPushToClickup: { type: Boolean, default: true },
+    lastEntrySyncAt: { type: Date },
 
     lastActiveAt: { type: Date },
   },

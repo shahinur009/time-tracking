@@ -10,6 +10,7 @@ import { errorHandler, notFoundHandler } from './middleware/error';
 import { TimeEntry } from './models/TimeEntry';
 import { User } from './models/User';
 import { initSocket } from './socket';
+import { syncAllConnectedUsers } from './services/clickupEntrySync';
 
 async function backfillLegacyEntrySource(): Promise<void> {
   try {
@@ -72,6 +73,25 @@ async function start(): Promise<void> {
     console.log(`[api] listening on http://localhost:${env.PORT}`);
     console.log(`[api] socket.io ready`);
   });
+
+  startClickupEntryPoll();
+}
+
+function startClickupEntryPoll(): void {
+  const minutes = env.CLICKUP_ENTRY_POLL_MIN;
+  if (!minutes || minutes <= 0) {
+    console.log('[clickup-poll] disabled');
+    return;
+  }
+  const ms = minutes * 60 * 1000;
+  console.log(`[clickup-poll] running every ${minutes} min (webhook-backstop)`);
+  const tick = () => {
+    syncAllConnectedUsers().catch((err) =>
+      console.error('[clickup-poll] tick failed', err),
+    );
+  };
+  setTimeout(tick, 60 * 1000);
+  setInterval(tick, ms);
 }
 
 start().catch((err) => {

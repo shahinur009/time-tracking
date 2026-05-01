@@ -10,6 +10,8 @@ import calendar from './calendar.routes';
 import timesheet from './timesheet.routes';
 import team from './team.routes';
 import clickup from './clickup.routes';
+import { asyncHandler } from '../utils/asyncHandler';
+import { webhookHandler } from '../controllers/clickup.controller';
 
 const router = Router();
 
@@ -39,6 +41,8 @@ router.get('/', (_req, res) => {
 router.get('/health', (_req, res) => {
   res.json({ status: 'success', uptime: process.uptime() });
 });
+
+router.post('/webhooks/clickup', asyncHandler(webhookHandler));
 
 router.use('/auth', auth);
 router.use('/users', users);

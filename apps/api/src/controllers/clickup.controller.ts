@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { User } from '../models/User';
 import { ClickUpTask } from '../models/ClickUpTask';
+import { TimeEntry } from '../models/TimeEntry';
 import { ApiError } from '../utils/ApiError';
 import { signAccessToken, signRefreshToken } from '../utils/jwt';
 import { randomToken } from '../utils/crypto';
@@ -13,7 +14,10 @@ import {
   loadTokenForUser,
   storeTokenForUser,
   syncUserTasks,
+  subscribeWebhook,
+  unsubscribeWebhook,
 } from '../services/clickup';
+import { syncUserEntries } from '../services/clickupEntrySync';
 
 const stateStore = new Map<string, { createdAt: number }>();
 const STATE_TTL_MS = 10 * 60 * 1000;
@@ -28,6 +32,28 @@ function pruneStates(): void {
 function ensureConfigured(): void {
   if (!clickupConfigured()) {
     throw new ApiError(503, 'ClickUp integration not configured on server');
+  }
+}
+
+function webhookEndpoint(): string | null {
+  if (!env.CLICKUP_WEBHOOK_BASE) return null;
+  return `${env.CLICKUP_WEBHOOK_BASE.replace(/\/$/, '')}/webhooks/clickup`;
+}
+
+async function trySubscribeWebhook(
+  userId: string,
+  token: string,
+  teamId?: string,
+): Promise<void> {
+  if (!teamId) return;
+  const endpoint = webhookEndpoint();
+  if (!endpoint) {
+    console.warn('[clickup] CLICKUP_WEBHOOK_BASE not set, skipping webhook subscribe');
+    return;
+  }
+  const sub = await subscribeWebhook(token, teamId, endpoint);
+  if (sub?.id) {
+    await User.findByIdAndUpdate(userId, { clickupWebhookId: sub.id });
   }
 }
 
@@ -84,6 +110,12 @@ export async function callback(req: Request, res: Response): Promise<void> {
     syncUserTasks(user.id, tokenRes.access_token, defaultTeamId).catch((err) => {
       console.error('[clickup] initial sync failed', err);
     });
+    syncUserEntries(user.id).catch((err) => {
+      console.error('[clickup] initial entry sync failed', err);
+    });
+    trySubscribeWebhook(user.id, tokenRes.access_token, defaultTeamId).catch(
+      (err) => console.error('[clickup] webhook subscribe failed', err),
+    );
 
     const accessToken = signAccessToken({ sub: user.id, role: user.role });
     const refreshToken = signRefreshToken({ sub: user.id, role: user.role });
@@ -101,7 +133,7 @@ export async function callback(req: Request, res: Response): Promise<void> {
 
 export async function status(req: Request, res: Response): Promise<void> {
   const user = await User.findById(req.user!.id).select(
-    'clickupUserId clickupTeamId clickupConnectedAt',
+    'clickupUserId clickupTeamId clickupConnectedAt autoPushToClickup lastEntrySyncAt clickupWebhookId',
   );
   const connected = Boolean(user?.clickupUserId);
   let lastSyncedAt: Date | null = null;
@@ -120,6 +152,9 @@ export async function status(req: Request, res: Response): Promise<void> {
       clickupTeamId: user?.clickupTeamId || null,
       connectedAt: user?.clickupConnectedAt || null,
       lastSyncedAt,
+      lastEntrySyncAt: user?.lastEntrySyncAt || null,
+      autoPushToClickup: user?.autoPushToClickup ?? true,
+      webhookActive: Boolean(user?.clickupWebhookId),
       configured: clickupConfigured(),
     },
   });
@@ -140,8 +175,27 @@ export async function sync(req: Request, res: Response): Promise<void> {
   res.json({ status: 'success', data: summary });
 }
 
+export async function syncEntries(req: Request, res: Response): Promise<void> {
+  const t = await loadTokenForUser(req.user!.id);
+  if (!t) throw new ApiError(409, 'ClickUp not connected');
+  const summary = await syncUserEntries(req.user!.id);
+  res.json({ status: 'success', data: summary });
+}
+
+export async function setAutoPush(req: Request, res: Response): Promise<void> {
+  const { enabled } = req.body as { enabled?: boolean };
+  if (typeof enabled !== 'boolean') {
+    throw new ApiError(400, '`enabled` must be boolean');
+  }
+  await User.findByIdAndUpdate(req.user!.id, { autoPushToClickup: enabled });
+  res.json({ status: 'success', data: { autoPushToClickup: enabled } });
+}
+
 export async function listTasks(req: Request, res: Response): Promise<void> {
-  const { q, listId, spaceId, assigneeMe, limit } = req.query as Record<string, string | undefined>;
+  const { q, listId, spaceId, assigneeMe, limit } = req.query as Record<
+    string,
+    string | undefined
+  >;
   const filter: Record<string, unknown> = { userId: req.user!.id, archived: false };
   if (listId) filter.clickupListId = listId;
   if (spaceId) filter.clickupSpaceId = spaceId;
@@ -190,6 +244,12 @@ export async function connectPersonalToken(
   syncUserTasks(req.user!.id, t, defaultTeamId).catch((err) => {
     console.error('[clickup] personal-token sync failed', err);
   });
+  syncUserEntries(req.user!.id).catch((err) => {
+    console.error('[clickup] personal-token entry sync failed', err);
+  });
+  trySubscribeWebhook(req.user!.id, t, defaultTeamId).catch((err) =>
+    console.error('[clickup] webhook subscribe failed', err),
+  );
 
   res.json({
     status: 'success',
@@ -203,14 +263,66 @@ export async function connectPersonalToken(
 }
 
 export async function disconnect(req: Request, res: Response): Promise<void> {
+  const t = await loadTokenForUser(req.user!.id);
+  const user = await User.findById(req.user!.id).select('clickupWebhookId');
+  if (t && user?.clickupWebhookId) {
+    await unsubscribeWebhook(t.token, user.clickupWebhookId);
+  }
   await User.findByIdAndUpdate(req.user!.id, {
     $unset: {
       clickupAccessToken: '',
       clickupUserId: '',
       clickupTeamId: '',
       clickupConnectedAt: '',
+      clickupWebhookId: '',
+      lastEntrySyncAt: '',
     },
   });
   await ClickUpTask.deleteMany({ userId: req.user!.id });
   res.json({ status: 'success', data: { disconnected: true } });
 }
+
+export async function webhookHandler(req: Request, res: Response): Promise<void> {
+  res.status(200).json({ ok: true });
+  try {
+    const body = req.body as {
+      event?: string;
+      task_id?: string;
+      history_items?: unknown[];
+      webhook_id?: string;
+    };
+    if (!body?.event) return;
+
+    const webhookId = body.webhook_id;
+    if (!webhookId) return;
+
+    const user = await User.findOne({ clickupWebhookId: webhookId }).select('_id');
+    if (!user) return;
+
+    if (
+      body.event === 'taskTimeTrackedUpdated' ||
+      body.event === 'taskTimeTrackedDeleted'
+    ) {
+      await syncUserEntries(user._id.toString()).catch((err) =>
+        console.error('[clickup-webhook] entry sync failed', err),
+      );
+    }
+    if (
+      body.event === 'taskCreated' ||
+      body.event === 'taskUpdated' ||
+      body.event === 'taskDeleted'
+    ) {
+      const t = await loadTokenForUser(user._id.toString());
+      if (t) {
+        await syncUserTasks(user._id.toString(), t.token, t.teamId).catch((err) =>
+          console.error('[clickup-webhook] task sync failed', err),
+        );
+      }
+    }
+  } catch (err) {
+    console.error('[clickup-webhook] handler error', err);
+  }
+}
+
+// keep TimeEntry import lint-active
+void TimeEntry;

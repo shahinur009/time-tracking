@@ -277,6 +277,115 @@ export async function postTimeEntry(
   return { id };
 }
 
+export async function putTimeEntry(
+  token: string,
+  teamId: string,
+  timerId: string,
+  payload: {
+    start?: number;
+    end?: number;
+    duration?: number;
+    description?: string;
+    tid?: string;
+  },
+): Promise<void> {
+  await clickupFetch(`/team/${teamId}/time_entries/${timerId}`, {
+    token,
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function deleteTimeEntry(
+  token: string,
+  teamId: string,
+  timerId: string,
+): Promise<void> {
+  await clickupFetch(`/team/${teamId}/time_entries/${timerId}`, {
+    token,
+    method: 'DELETE',
+  });
+}
+
+export interface RawTimeEntry {
+  id: string;
+  task?: { id?: string; name?: string } | null;
+  wid?: string;
+  user?: { id?: number | string; email?: string };
+  description?: string;
+  start: string | number;
+  end: string | number;
+  duration: string | number;
+  date_updated?: string | number;
+  task_location?: {
+    list_id?: string | number;
+    space_id?: string | number;
+    folder_id?: string | number;
+  };
+}
+
+export async function pullTimeEntries(
+  token: string,
+  teamId: string,
+  startMs: number,
+  endMs: number,
+  assigneeId?: string,
+): Promise<RawTimeEntry[]> {
+  const params = new URLSearchParams({
+    start_date: String(startMs),
+    end_date: String(endMs),
+  });
+  if (assigneeId) params.set('assignee', assigneeId);
+  const data = await clickupFetch<{ data: RawTimeEntry[] }>(
+    `/team/${teamId}/time_entries?${params.toString()}`,
+    { token },
+  );
+  return data.data || [];
+}
+
+export async function subscribeWebhook(
+  token: string,
+  teamId: string,
+  endpoint: string,
+): Promise<{ id: string; secret?: string } | null> {
+  try {
+    const data = await clickupFetch<{
+      id?: string;
+      webhook?: { id: string; secret?: string };
+    }>(`/team/${teamId}/webhook`, {
+      token,
+      method: 'POST',
+      body: JSON.stringify({
+        endpoint,
+        events: [
+          'taskTimeTrackedUpdated',
+          'taskTimeTrackedDeleted',
+          'taskCreated',
+          'taskUpdated',
+          'taskDeleted',
+        ],
+      }),
+    });
+    const id = data?.webhook?.id || data?.id;
+    const secret = data?.webhook?.secret;
+    return id ? { id, secret } : null;
+  } catch (err) {
+    console.error('[clickup] webhook subscribe failed', err);
+    return null;
+  }
+}
+
+export async function unsubscribeWebhook(
+  token: string,
+  webhookId: string,
+): Promise<void> {
+  try {
+    await clickupFetch(`/webhook/${webhookId}`, { token, method: 'DELETE' });
+  } catch (err) {
+    console.error('[clickup] webhook unsubscribe failed', err);
+  }
+}
+
 export async function loadTokenForUser(userId: string): Promise<{
   token: string;
   teamId?: string;

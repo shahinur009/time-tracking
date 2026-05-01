@@ -20,6 +20,24 @@ const sync = async (body = {}) => {
     return res?.data;
 };
 
+const syncEntries = async () => {
+    const res = await fetcher({
+        path: '/clickup/sync-entries',
+        method: POST,
+        body: {},
+    });
+    return res?.data;
+};
+
+const setAutoPush = async (enabled) => {
+    const res = await fetcher({
+        path: '/clickup/auto-push',
+        method: POST,
+        body: { enabled },
+    });
+    return res?.data;
+};
+
 const tasks = async (params = {}) => {
     const res = await fetcher({ path: '/clickup/tasks', method: GET, params });
     return res?.data;
@@ -54,6 +72,8 @@ export const clickup = {
     status,
     teams,
     sync,
+    syncEntries,
+    setAutoPush,
     tasks,
     disconnect,
     connectToken,

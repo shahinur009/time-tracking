@@ -9,12 +9,15 @@ import {
     Popconfirm,
     Input,
     Form,
+    Switch,
 } from 'antd';
 import withAuth from '@/hoc/withAuth';
 import useAuth from '@/hooks/useAuth';
 import {
     useClickupStatus,
     useClickupSync,
+    useClickupSyncEntries,
+    useClickupSetAutoPush,
     useClickupDisconnect,
     useClickupConnectToken,
 } from '@/lib/queries/clickup';
@@ -35,6 +38,8 @@ function SettingsPage() {
     const { user } = useAuth();
     const { data: status, isLoading } = useClickupStatus();
     const sync = useClickupSync();
+    const syncEntries = useClickupSyncEntries();
+    const setAutoPush = useClickupSetAutoPush();
     const disconnect = useClickupDisconnect();
     const connectToken = useClickupConnectToken();
     const [tokenValue, setTokenValue] = useState('');
@@ -159,14 +164,54 @@ function SettingsPage() {
                             <Text type="secondary">Last task sync:</Text>{' '}
                             <strong>{fmt(status?.lastSyncedAt)}</strong>
                         </Paragraph>
+                        <Paragraph>
+                            <Text type="secondary">Last entry pull:</Text>{' '}
+                            <strong>{fmt(status?.lastEntrySyncAt)}</strong>
+                        </Paragraph>
+                        <Paragraph>
+                            <Text type="secondary">Webhook:</Text>{' '}
+                            {status?.webhookActive ? (
+                                <Tag color="green">Active (real-time)</Tag>
+                            ) : (
+                                <Tag color="orange">
+                                    Not subscribed (poll-only)
+                                </Tag>
+                            )}
+                        </Paragraph>
 
-                        <Space>
+                        <Divider />
+
+                        <Paragraph>
+                            <Space>
+                                <Switch
+                                    checked={status?.autoPushToClickup ?? true}
+                                    loading={setAutoPush.isLoading}
+                                    onChange={(checked) =>
+                                        setAutoPush.mutate(checked)
+                                    }
+                                />
+                                <Text strong>Auto-push entries to ClickUp on stop</Text>
+                            </Space>
+                            <br />
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                                When ON, every stopped timer with a ClickUp task is
+                                automatically logged to ClickUp.
+                            </Text>
+                        </Paragraph>
+
+                        <Space wrap>
                             <Button
                                 type="primary"
                                 loading={sync.isLoading}
                                 onClick={() => sync.mutate({})}
                             >
                                 Re-sync tasks
+                            </Button>
+                            <Button
+                                loading={syncEntries.isLoading}
+                                onClick={() => syncEntries.mutate()}
+                            >
+                                Pull time entries now
                             </Button>
                             <Popconfirm
                                 title="Disconnect ClickUp?"

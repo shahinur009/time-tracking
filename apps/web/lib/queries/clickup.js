@@ -34,6 +34,42 @@ export const useClickupSync = () => {
     });
 };
 
+export const useClickupSyncEntries = () => {
+    const toast = useToast();
+    const client = useQueryClient();
+    return useMutation({
+        mutationFn: clickup.syncEntries,
+        onSuccess: (data) => {
+            const ins = data?.inserted ?? 0;
+            const upd = data?.updated ?? 0;
+            const rem = data?.removed ?? 0;
+            toast(
+                'success',
+                `Entries: +${ins} ~${upd} -${rem}`,
+            );
+            client.invalidateQueries(['entries']);
+            client.invalidateQueries(['clickup']);
+        },
+        onError: (err) => toast('error', err?.message || 'Entry sync failed'),
+    });
+};
+
+export const useClickupSetAutoPush = () => {
+    const toast = useToast();
+    const client = useQueryClient();
+    return useMutation({
+        mutationFn: clickup.setAutoPush,
+        onSuccess: (data) => {
+            toast(
+                'success',
+                data?.autoPushToClickup ? 'Auto-push ON' : 'Auto-push OFF',
+            );
+            client.invalidateQueries(['clickup']);
+        },
+        onError: (err) => toast('error', err?.message || 'Toggle failed'),
+    });
+};
+
 export const useClickupConnectToken = () => {
     const toast = useToast();
     const client = useQueryClient();

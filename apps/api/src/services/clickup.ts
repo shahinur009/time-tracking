@@ -343,11 +343,17 @@ export async function pullTimeEntries(
   return data.data || [];
 }
 
+export interface WebhookSubscribeResult {
+  id: string;
+  secret?: string;
+  error?: string;
+}
+
 export async function subscribeWebhook(
   token: string,
   teamId: string,
   endpoint: string,
-): Promise<{ id: string; secret?: string } | null> {
+): Promise<WebhookSubscribeResult> {
   try {
     const data = await clickupFetch<{
       id?: string;
@@ -358,20 +364,27 @@ export async function subscribeWebhook(
       body: JSON.stringify({
         endpoint,
         events: [
-          'taskTimeTrackedUpdated',
-          'taskTimeTrackedDeleted',
           'taskCreated',
           'taskUpdated',
           'taskDeleted',
+          'taskTimeTrackedUpdated',
         ],
       }),
     });
     const id = data?.webhook?.id || data?.id;
     const secret = data?.webhook?.secret;
-    return id ? { id, secret } : null;
+    if (id) {
+      console.log(`[clickup] webhook subscribed id=${id} endpoint=${endpoint}`);
+      return { id, secret };
+    }
+    console.error('[clickup] webhook subscribe returned no id', data);
+    return { id: '', error: 'no_id_in_response' };
   } catch (err) {
-    console.error('[clickup] webhook subscribe failed', err);
-    return null;
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(
+      `[clickup] webhook subscribe failed endpoint=${endpoint} team=${teamId}: ${msg}`,
+    );
+    return { id: '', error: msg };
   }
 }
 

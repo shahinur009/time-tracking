@@ -38,6 +38,7 @@ const memberItems = [
     { key: '/calendar', icon: <Calendar size={16} />, label: 'Calendar' },
     { key: '/dashboard', icon: <LayoutDashboard size={16} />, label: 'Dashboard' },
     { key: '/reports', icon: <FileBarChart size={16} />, label: 'Reports' },
+    { key: '/settings', icon: <Settings size={16} />, label: 'Settings' },
 ];
 
 const adminItems = [

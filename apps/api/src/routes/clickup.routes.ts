@@ -13,6 +13,7 @@ router.get('/tasks', asyncHandler(ctrl.listTasks));
 router.post('/sync', asyncHandler(ctrl.sync));
 router.post('/sync-entries', asyncHandler(ctrl.syncEntries));
 router.post('/auto-push', asyncHandler(ctrl.setAutoPush));
+router.post('/webhook/subscribe', asyncHandler(ctrl.retryWebhook));
 router.post('/connect-token', asyncHandler(ctrl.connectPersonalToken));
 router.delete('/disconnect', asyncHandler(ctrl.disconnect));
 

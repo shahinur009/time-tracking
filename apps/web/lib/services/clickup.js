@@ -38,6 +38,15 @@ const setAutoPush = async (enabled) => {
     return res?.data;
 };
 
+const retryWebhook = async () => {
+    const res = await fetcher({
+        path: '/clickup/webhook/subscribe',
+        method: POST,
+        body: {},
+    });
+    return res?.data;
+};
+
 const tasks = async (params = {}) => {
     const res = await fetcher({ path: '/clickup/tasks', method: GET, params });
     return res?.data;
@@ -74,6 +83,7 @@ export const clickup = {
     sync,
     syncEntries,
     setAutoPush,
+    retryWebhook,
     tasks,
     disconnect,
     connectToken,

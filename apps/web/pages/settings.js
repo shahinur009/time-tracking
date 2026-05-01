@@ -18,6 +18,7 @@ import {
     useClickupSync,
     useClickupSyncEntries,
     useClickupSetAutoPush,
+    useClickupRetryWebhook,
     useClickupDisconnect,
     useClickupConnectToken,
 } from '@/lib/queries/clickup';
@@ -40,6 +41,7 @@ function SettingsPage() {
     const sync = useClickupSync();
     const syncEntries = useClickupSyncEntries();
     const setAutoPush = useClickupSetAutoPush();
+    const retryWebhook = useClickupRetryWebhook();
     const disconnect = useClickupDisconnect();
     const connectToken = useClickupConnectToken();
     const [tokenValue, setTokenValue] = useState('');
@@ -173,9 +175,18 @@ function SettingsPage() {
                             {status?.webhookActive ? (
                                 <Tag color="green">Active (real-time)</Tag>
                             ) : (
-                                <Tag color="orange">
-                                    Not subscribed (poll-only)
-                                </Tag>
+                                <Space>
+                                    <Tag color="orange">
+                                        Not subscribed (poll-only)
+                                    </Tag>
+                                    <Button
+                                        size="small"
+                                        loading={retryWebhook.isLoading}
+                                        onClick={() => retryWebhook.mutate()}
+                                    >
+                                        Retry subscribe
+                                    </Button>
+                                </Space>
                             )}
                         </Paragraph>
 

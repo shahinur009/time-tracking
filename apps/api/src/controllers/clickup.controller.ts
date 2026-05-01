@@ -44,17 +44,19 @@ async function trySubscribeWebhook(
   userId: string,
   token: string,
   teamId?: string,
-): Promise<void> {
-  if (!teamId) return;
+): Promise<{ ok: boolean; error?: string }> {
+  if (!teamId) return { ok: false, error: 'no_team_id' };
   const endpoint = webhookEndpoint();
   if (!endpoint) {
     console.warn('[clickup] CLICKUP_WEBHOOK_BASE not set, skipping webhook subscribe');
-    return;
+    return { ok: false, error: 'webhook_base_missing' };
   }
   const sub = await subscribeWebhook(token, teamId, endpoint);
-  if (sub?.id) {
+  if (sub.id) {
     await User.findByIdAndUpdate(userId, { clickupWebhookId: sub.id });
+    return { ok: true };
   }
+  return { ok: false, error: sub.error || 'unknown' };
 }
 
 export async function authorize(_req: Request, res: Response): Promise<void> {
@@ -189,6 +191,26 @@ export async function setAutoPush(req: Request, res: Response): Promise<void> {
   }
   await User.findByIdAndUpdate(req.user!.id, { autoPushToClickup: enabled });
   res.json({ status: 'success', data: { autoPushToClickup: enabled } });
+}
+
+export async function retryWebhook(req: Request, res: Response): Promise<void> {
+  const t = await loadTokenForUser(req.user!.id);
+  if (!t) throw new ApiError(409, 'ClickUp not connected');
+
+  const user = await User.findById(req.user!.id).select('clickupWebhookId');
+  if (user?.clickupWebhookId) {
+    await unsubscribeWebhook(t.token, user.clickupWebhookId);
+    await User.findByIdAndUpdate(req.user!.id, { $unset: { clickupWebhookId: '' } });
+  }
+
+  const result = await trySubscribeWebhook(req.user!.id, t.token, t.teamId);
+  if (!result.ok) {
+    throw new ApiError(
+      502,
+      `Webhook subscribe failed: ${result.error || 'unknown'}`,
+    );
+  }
+  res.json({ status: 'success', data: { subscribed: true } });
 }
 
 export async function listTasks(req: Request, res: Response): Promise<void> {

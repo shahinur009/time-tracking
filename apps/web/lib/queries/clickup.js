@@ -70,6 +70,20 @@ export const useClickupSetAutoPush = () => {
     });
 };
 
+export const useClickupRetryWebhook = () => {
+    const toast = useToast();
+    const client = useQueryClient();
+    return useMutation({
+        mutationFn: clickup.retryWebhook,
+        onSuccess: () => {
+            toast('success', 'Webhook subscribed (real-time active)');
+            client.invalidateQueries(['clickup']);
+        },
+        onError: (err) =>
+            toast('error', err?.message || 'Webhook subscribe failed'),
+    });
+};
+
 export const useClickupConnectToken = () => {
     const toast = useToast();
     const client = useQueryClient();

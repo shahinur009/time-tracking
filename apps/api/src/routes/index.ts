@@ -42,6 +42,27 @@ router.get('/health', (_req, res) => {
   res.json({ status: 'success', uptime: process.uptime() });
 });
 
+router.get('/__build', (_req, res) => {
+  const stack: string[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  router.stack.forEach((layer: any) => {
+    if (layer.route) {
+      stack.push(
+        `${Object.keys(layer.route.methods || {}).join(',').toUpperCase()} ${
+          layer.route.path
+        }`,
+      );
+    } else if (layer.regexp) {
+      stack.push(`USE ${layer.regexp.toString()}`);
+    }
+  });
+  res.json({
+    status: 'success',
+    buildStamp: '2026-05-02-v2-webhook-fix',
+    routes: stack,
+  });
+});
+
 router.post('/webhooks/clickup', asyncHandler(webhookHandler));
 
 router.use('/auth', auth);

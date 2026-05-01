@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1.6
+# build-stamp: 2026-05-02-v2
 FROM node:20-alpine AS builder
 WORKDIR /repo
 

@@ -25,6 +25,13 @@ a {
     text-decoration: none;
 }
 
+/* ===== Fluid typography utilities (no media queries) ===== */
+.tt-fluid-h1 { font-size: clamp(20px, 3.2vw, 28px); }
+.tt-fluid-h2 { font-size: clamp(18px, 2.6vw, 24px); }
+.tt-fluid-h3 { font-size: clamp(16px, 2.2vw, 20px); }
+.tt-fluid-body { font-size: clamp(13px, 1.6vw, 15px); }
+.tt-fluid-small { font-size: clamp(11px, 1.4vw, 13px); }
+
 .auth-wrap {
     min-height: 100vh;
     display: flex;
@@ -38,7 +45,7 @@ a {
     width: 100%;
     max-width: 420px;
     background: #fff;
-    padding: 40px 32px;
+    padding: clamp(20px, 4vw, 40px) clamp(16px, 3vw, 32px);
     border-radius: 10px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
@@ -59,19 +66,18 @@ a {
 }
 
 .page-head h1 {
-    font-size: 22px;
+    font-size: clamp(18px, 2.6vw, 22px);
     font-weight: 600;
     margin: 0;
 }
 
-/* ===== Responsive utilities for tables / grid layouts ===== */
+/* ===== Responsive utilities ===== */
 
 .responsive-scroll {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 }
 
-/* AntD Table responsive: allow horizontal scroll on small screens */
 .ant-table-wrapper .ant-table {
     overflow-x: auto;
 }
@@ -81,7 +87,7 @@ a {
 }
 
 /* Dashboard / Reports main row: chart area (70%) + side panel (30%).
-   Wraps to single column when neither fits its min-basis. No media queries. */
+   Wraps to single column when neither fits its min-basis. */
 .tt-main-row {
     display: flex;
     flex-wrap: wrap;
@@ -97,14 +103,12 @@ a {
     min-width: 0;
 }
 
-/* 3-column stat strip: shrinks to fewer columns automatically. */
 .tt-stat-strip {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
     row-gap: 12px;
 }
 
-/* Pie + legend: side-by-side when room, stacks below ~520px. */
 .tt-pie-legend,
 .tt-pie-legend--lg {
     display: grid;
@@ -113,8 +117,6 @@ a {
     align-items: center;
 }
 
-/* Project row: name | duration | bar | percent.
-   Flexible columns compress gracefully on narrow widths. */
 .tt-project-row,
 .tt-project-row--lg {
     display: grid;
@@ -124,7 +126,7 @@ a {
     margin-bottom: 14px;
 }
 
-/* Grouped table wrapper: horizontal scroll on small screens */
+/* Grouped table wrapper: horizontal scroll when content overflows */
 .tt-grouped-table {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -133,9 +135,10 @@ a {
     min-width: 720px;
 }
 
-/* Date range panel: presets + 2 months side-by-side */
+/* Date range panel: presets + 2 months side-by-side, wraps when narrow */
 .tt-daterange-panel {
     display: flex;
+    flex-wrap: wrap;
     font-size: 14px;
     color: #333;
     background: #fff;
@@ -143,52 +146,28 @@ a {
     max-width: 100vw;
 }
 .tt-daterange-panel .tt-daterange-presets {
-    width: 170px;
+    flex: 1 1 170px;
+    min-width: 0;
     border-right: 1px solid #e8e8e8;
     padding: 8px 0;
-    flex-shrink: 0;
 }
 .tt-daterange-panel .tt-daterange-months {
+    flex: 3 1 320px;
+    min-width: 0;
     padding: 16px;
     display: flex;
+    flex-wrap: wrap;
     gap: 24px;
-}
-@media (max-width: 768px) {
-    .tt-daterange-panel {
-        flex-direction: column;
-    }
-    .tt-daterange-panel .tt-daterange-presets {
-        width: 100%;
-        border-right: none;
-        border-bottom: 1px solid #e8e8e8;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-        padding: 8px;
-    }
-    .tt-daterange-panel .tt-daterange-months {
-        flex-direction: column;
-        gap: 12px;
-        padding: 12px;
-    }
-    .tt-daterange-panel .tt-daterange-months > * {
-        width: 100% !important;
-    }
 }
 
 /* Calendar page: main + side */
 .tt-calendar-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
     gap: 20px;
 }
-@media (max-width: 992px) {
-    .tt-calendar-grid {
-        grid-template-columns: 1fr;
-    }
-}
 
-/* Generic page header row */
+/* Generic page header */
 .tt-page-header {
     display: flex;
     align-items: center;
@@ -204,7 +183,7 @@ a {
     flex-wrap: wrap;
 }
 
-/* Card with fluid padding — shrinks on narrow viewports without media queries */
+/* Card with fluid padding */
 .tt-card {
     background: #fff;
     padding: clamp(12px, 2.5vw, 24px);
@@ -212,47 +191,34 @@ a {
     border: 1px solid #e8e8e8;
 }
 
-/* Timesheet table wrap: scroll horizontally on small screens */
-@media (max-width: 992px) {
-    .tt-timesheet-wrap {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch;
-    }
-    .tt-timesheet-wrap > table {
-        min-width: 900px;
-    }
+/* Timesheet table: always allow horizontal scroll */
+.tt-timesheet-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.tt-timesheet-wrap > table {
+    min-width: 900px;
 }
 
-/* Generic raw <table> wrapper for horizontal scrolling */
 .tt-table-scroll {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 }
 
-/* Reduce app content padding on small screens */
-@media (max-width: 576px) {
-    .ant-layout-content {
-        padding: 12px !important;
-    }
+/* Tracker EntryRow: wraps gracefully at narrow widths */
+.tt-entry-row {
+    flex-wrap: wrap;
+    row-gap: 8px;
 }
-
-/* Tracker EntryRow actions group: stays right on desktop, wraps on mobile */
 .tt-entry-row-actions {
     margin-left: auto;
     display: inline-flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
 }
 
-@media (max-width: 768px) {
-    .tt-entry-row {
-        flex-wrap: wrap;
-        row-gap: 8px;
-    }
-    .tt-entry-row-actions {
-        margin-left: 0;
-        width: 100%;
-        justify-content: flex-end;
-        flex-wrap: wrap;
-    }
+/* AntD layout content padding fluid */
+.ant-layout-content {
+    padding: clamp(12px, 2vw, 24px) !important;
 }

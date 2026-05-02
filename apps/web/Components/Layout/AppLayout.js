@@ -286,7 +286,9 @@ function AppLayout({ children }) {
                     })}
                 </div>
                 </Sider>
-                <Content style={{ padding: 24 }}>{children}</Content>
+                <Content style={{ padding: 'clamp(12px, 2vw, 24px)' }}>
+                    {children}
+                </Content>
             </Layout>
         </Layout>
     );

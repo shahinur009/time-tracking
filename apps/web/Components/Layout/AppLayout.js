@@ -32,6 +32,19 @@ const { Header, Sider, Content } = Layout;
 
 const ORDER_KEY = 'sidebar-order-v1';
 
+function useViewportBelow(px) {
+    const [below, setBelow] = useState(false);
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const mq = window.matchMedia(`(max-width: ${px - 1}px)`);
+        const update = () => setBelow(mq.matches);
+        update();
+        mq.addEventListener('change', update);
+        return () => mq.removeEventListener('change', update);
+    }, [px]);
+    return below;
+}
+
 const memberItems = [
     { key: '/tracker', icon: <Clock size={16} />, label: 'Time Tracker' },
     { key: '/timesheet', icon: <ListChecks size={16} />, label: 'Timesheet' },
@@ -133,7 +146,9 @@ function AppLayout({ children }) {
         ],
     };
 
-    const sidebarWidth = collapsed ? 72 : 230;
+    const isMobile = useViewportBelow(720);
+    const collapsedWidth = isMobile ? 0 : 72;
+    const sidebarWidth = collapsed ? collapsedWidth : 230;
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
@@ -202,7 +217,7 @@ function AppLayout({ children }) {
                 style={{
                     position: 'fixed',
                     top: '50%',
-                    left: sidebarWidth - 12,
+                    left: Math.max(0, sidebarWidth - 12),
                     transform: 'translateY(-50%)',
                     width: 24,
                     height: 24,
@@ -241,7 +256,7 @@ function AppLayout({ children }) {
                     onCollapse={toggle}
                     trigger={null}
                     width={230}
-                    collapsedWidth={72}
+                    collapsedWidth={collapsedWidth}
                     style={{
                         borderRight: '1px solid #eef0f3',
                         background: '#fff',

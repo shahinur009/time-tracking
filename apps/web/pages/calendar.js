@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Calendar as AntCalendar, Typography, Card, Empty } from 'antd';
+import { Calendar as AntCalendar, Typography, Card, Empty, Modal } from 'antd';
 import dayjs from 'dayjs';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import withAuth from '@/hoc/withAuth';
@@ -12,6 +12,7 @@ const MAX_VISIBLE_PER_DAY = 3;
 
 function CalendarPage() {
     const [selectedDate, setSelectedDate] = useState(dayjs());
+    const [moreOpen, setMoreOpen] = useState(null);
 
     const monthStart = startOfMonth(selectedDate.toDate());
     const monthEnd = endOfMonth(selectedDate.toDate());
@@ -31,6 +32,11 @@ function CalendarPage() {
         return map;
     }, [entries]);
 
+    const openMore = (e, dayValue, items) => {
+        e.stopPropagation();
+        setMoreOpen({ dayValue, items });
+    };
+
     const dateCellRender = (value) => {
         const key = value.format('YYYY-MM-DD');
         const items = byDay[key] || [];
@@ -38,46 +44,34 @@ function CalendarPage() {
         const visible = items.slice(0, MAX_VISIBLE_PER_DAY);
         const remaining = items.length - visible.length;
         return (
-            <div
-                style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 2,
-                    overflow: 'hidden',
-                }}
-            >
+            <div className="tt-cal-cell">
                 {visible.map((e) => (
                     <div
                         key={e._id}
+                        className="tt-cal-chip"
                         title={`${e.description || '(no description)'} — ${formatDuration(
                             e.duration,
                         )}`}
                         style={{
                             background: e.projectId?.color || '#03a9f4',
-                            color: '#fff',
-                            padding: '1px 6px',
-                            borderRadius: 3,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                            fontSize: 'clamp(9px, 1vw, 11px)',
-                            lineHeight: 1.4,
                         }}
                     >
-                        {e.description || '(no description)'} ·{' '}
-                        {formatDuration(e.duration)}
+                        <span className="tt-cal-chip-text">
+                            {e.description || '(no description)'}
+                        </span>
+                        <span className="tt-cal-chip-dur">
+                            {formatDuration(e.duration)}
+                        </span>
                     </div>
                 ))}
                 {remaining > 0 && (
-                    <div
-                        style={{
-                            color: '#888',
-                            fontSize: 'clamp(9px, 1vw, 11px)',
-                            paddingLeft: 4,
-                        }}
+                    <button
+                        type="button"
+                        className="tt-cal-more"
+                        onClick={(ev) => openMore(ev, value, items)}
                     >
                         +{remaining} more
-                    </div>
+                    </button>
                 )}
             </div>
         );
@@ -163,6 +157,49 @@ function CalendarPage() {
                     )}
                 </Card>
             </div>
+
+            <Modal
+                open={!!moreOpen}
+                onCancel={() => setMoreOpen(null)}
+                footer={null}
+                width="min(720px, 96vw)"
+                title={
+                    moreOpen ? (
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                flexWrap: 'wrap',
+                                gap: 8,
+                            }}
+                        >
+                            <span>
+                                {moreOpen.dayValue.format('MMMM D, YYYY')}
+                            </span>
+                            <Text
+                                type="secondary"
+                                style={{
+                                    fontSize: 13,
+                                    fontVariantNumeric: 'tabular-nums',
+                                }}
+                            >
+                                {moreOpen.items.length} entries ·{' '}
+                                {formatDuration(
+                                    moreOpen.items.reduce(
+                                        (s, e) => s + (e.duration || 0),
+                                        0,
+                                    ),
+                                )}
+                            </Text>
+                        </div>
+                    ) : null
+                }
+                styles={{ body: { padding: 0, maxHeight: '70vh', overflow: 'auto' } }}
+                destroyOnClose
+            >
+                {moreOpen && <DayEntriesTable items={moreOpen.items} />}
+            </Modal>
         </>
     );
 }

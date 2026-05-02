@@ -181,6 +181,57 @@ a {
     font-size: clamp(11px, 1.4vw, 14px) !important;
 }
 
+/* Calendar day cell: stack chips vertically, hide overflow */
+.tt-cal-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+.tt-cal-chip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    color: #fff;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: clamp(9px, 1vw, 11px);
+    line-height: 1.4;
+    cursor: pointer;
+    transition: filter 150ms ease;
+}
+.tt-cal-chip:hover {
+    filter: brightness(0.92);
+}
+.tt-cal-chip-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+}
+.tt-cal-chip-dur {
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+    opacity: 0.85;
+}
+.tt-cal-more {
+    background: transparent;
+    border: none;
+    color: #1677ff;
+    font-size: clamp(9px, 1vw, 11px);
+    cursor: pointer;
+    padding: 1px 6px;
+    text-align: left;
+    border-radius: 3px;
+    transition: background 150ms ease;
+}
+.tt-cal-more:hover {
+    background: #e6f4ff;
+    text-decoration: underline;
+}
+
 /* Day-entries table: grid with intrinsic columns, no media queries.
    Horizontal scroll on very narrow screens; min-width keeps cols readable. */
 .tt-cal-table {

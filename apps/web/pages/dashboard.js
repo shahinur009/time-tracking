@@ -352,7 +352,7 @@ function DashboardPage() {
                             >
                                 <StatCell label="Total time" value={formatDuration(total)} />
                                 <StatCell label="Amount" value={amountDisplay} />
-                                <StatCell label="Billable" value={billablePct} last />
+                                <StatCell label="Billable" value={billablePct} />
                             </div>
 
                             <div style={{ minHeight: 320, position: 'relative' }}>
@@ -758,13 +758,13 @@ function FilterButton({ children, ...rest }) {
     );
 }
 
-function StatCell({ label, value, last }) {
+function StatCell({ label, value }) {
     return (
         <div
             style={{
                 textAlign: 'center',
-                borderRight: last ? 'none' : `1px solid ${DIVIDER}`,
                 padding: '0 16px',
+                minWidth: 0,
             }}
         >
             <div style={{ color: TEXT_MUTED, fontSize: 13, marginBottom: 8 }}>

@@ -80,104 +80,44 @@ a {
     overflow-x: auto !important;
 }
 
-/* Dashboard / Reports main row: chart area + side panel */
+/* Dashboard / Reports main row: chart area + side panel.
+   Intrinsic grid: side-by-side when room, stacks when narrow. No media queries. */
 .tt-main-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
     gap: 16px;
     align-items: flex-start;
 }
-.tt-main-row > .tt-main-col {
-    flex: 1;
+.tt-main-row > .tt-main-col,
+.tt-main-row > .tt-side-col {
     min-width: 0;
 }
-.tt-main-row > .tt-side-col {
-    width: 280px;
-    flex-shrink: 0;
-}
-@media (max-width: 992px) {
-    .tt-main-row {
-        flex-direction: column;
-    }
-    .tt-main-row > .tt-side-col {
-        width: 100%;
-    }
-}
 
-/* 3-column stat strip → 1 column on phone */
+/* 3-column stat strip: shrinks to fewer columns automatically. */
 .tt-stat-strip {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-}
-@media (max-width: 576px) {
-    .tt-stat-strip {
-        grid-template-columns: 1fr;
-    }
-    .tt-stat-strip > * {
-        border-right: none !important;
-        border-bottom: 1px solid #e8e8e8;
-        padding: 12px 16px !important;
-    }
-    .tt-stat-strip > *:last-child {
-        border-bottom: none;
-    }
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+    row-gap: 12px;
 }
 
-/* Pie + legend layout */
-.tt-pie-legend {
-    display: grid;
-    grid-template-columns: 260px 1fr;
-    gap: 32px;
-    align-items: center;
-}
+/* Pie + legend: side-by-side when room, stacks below ~520px. */
+.tt-pie-legend,
 .tt-pie-legend--lg {
-    grid-template-columns: 320px 1fr;
-}
-@media (max-width: 768px) {
-    .tt-pie-legend,
-    .tt-pie-legend--lg {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: 24px;
+    align-items: center;
 }
 
-/* Project row: name | duration | bar | percent */
-.tt-project-row {
-    display: grid;
-    grid-template-columns: 140px 90px 1fr 70px;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 14px;
-}
+/* Project row: name | duration | bar | percent.
+   Flexible columns compress gracefully on narrow widths. */
+.tt-project-row,
 .tt-project-row--lg {
-    grid-template-columns: 160px 100px 1fr 80px;
-}
-@media (max-width: 768px) {
-    .tt-project-row,
-    .tt-project-row--lg {
-        grid-template-columns: 1fr 80px;
-        grid-template-areas:
-            'name pct'
-            'bar bar'
-            'dur dur';
-        gap: 6px 12px;
-    }
-    .tt-project-row > :nth-child(1),
-    .tt-project-row--lg > :nth-child(1) {
-        grid-area: name;
-    }
-    .tt-project-row > :nth-child(2),
-    .tt-project-row--lg > :nth-child(2) {
-        grid-area: dur;
-        text-align: left;
-    }
-    .tt-project-row > :nth-child(3),
-    .tt-project-row--lg > :nth-child(3) {
-        grid-area: bar;
-    }
-    .tt-project-row > :nth-child(4),
-    .tt-project-row--lg > :nth-child(4) {
-        grid-area: pct;
-    }
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) auto minmax(60px, 2fr) auto;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
 }
 
 /* Grouped table wrapper: horizontal scroll on small screens */

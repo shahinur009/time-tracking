@@ -56,7 +56,7 @@ function AppLayout({ children }) {
     const { data: currentEntry } = useCurrentEntry();
     const running =
         currentEntry && currentEntry.status === 'running' ? currentEntry : null;
-    const liveSecs = useTimer(running?.startTime);
+    const liveSecs = useTimer(running?.startTime, running?._id);
 
     const defaults = useMemo(
         () => (isAdmin ? [...memberItems, ...adminItems] : memberItems),

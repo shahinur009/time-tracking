@@ -180,7 +180,7 @@ function DashboardPage() {
     const stopEntry = useStopEntry();
     const running =
         currentEntry && currentEntry.status === 'running' ? currentEntry : null;
-    const liveSecs = useTimer(running?.startTime);
+    const liveSecs = useTimer(running?.startTime, running?._id);
 
     const baseTotal = data?.total || 0;
     const total = baseTotal + (running ? liveSecs : 0);

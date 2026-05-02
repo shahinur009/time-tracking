@@ -57,7 +57,7 @@ function TimerBar() {
     const [cuPickerOpen, setCuPickerOpen] = useState(false);
 
     const running = current && current.status === 'running' ? current : null;
-    const seconds = useTimer(running?.startTime);
+    const seconds = useTimer(running?.startTime, running?._id);
 
     useEffect(() => {
         if (running) {

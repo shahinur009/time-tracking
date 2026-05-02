@@ -294,7 +294,15 @@ function DashboardPage() {
         <>
             <div className="tt-card">
                 <div className="tt-page-header">
-                    <Title level={3} style={{ margin: 0, fontWeight: 400, color: '#333' }}>
+                    <Title
+                        level={3}
+                        style={{
+                            margin: 0,
+                            fontWeight: 400,
+                            color: '#333',
+                            fontSize: 'clamp(18px, 2.6vw, 24px)',
+                        }}
+                    >
                         Dashboard
                     </Title>
                     <div className="tt-page-actions">
@@ -460,7 +468,7 @@ function DashboardPage() {
                                                     alignItems: 'center',
                                                     justifyContent: 'center',
                                                     pointerEvents: 'none',
-                                                    fontSize: 20,
+                                                    fontSize: 'clamp(14px, 2.4vw, 20px)',
                                                     fontWeight: 500,
                                                     color: '#333',
                                                     fontVariantNumeric: 'tabular-nums',
@@ -763,16 +771,22 @@ function StatCell({ label, value }) {
         <div
             style={{
                 textAlign: 'center',
-                padding: '0 16px',
+                padding: '0 clamp(8px, 2vw, 16px)',
                 minWidth: 0,
             }}
         >
-            <div style={{ color: TEXT_MUTED, fontSize: 13, marginBottom: 8 }}>
+            <div
+                style={{
+                    color: TEXT_MUTED,
+                    fontSize: 'clamp(11px, 1.4vw, 13px)',
+                    marginBottom: 8,
+                }}
+            >
                 {label}
             </div>
             <div
                 style={{
-                    fontSize: 24,
+                    fontSize: 'clamp(16px, 3vw, 24px)',
                     fontWeight: 500,
                     color: '#333',
                     fontVariantNumeric: 'tabular-nums',

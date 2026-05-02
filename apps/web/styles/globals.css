@@ -80,16 +80,20 @@ a {
     overflow-x: auto !important;
 }
 
-/* Dashboard / Reports main row: chart area + side panel.
-   Intrinsic grid: side-by-side when room, stacks when narrow. No media queries. */
+/* Dashboard / Reports main row: chart area (70%) + side panel (30%).
+   Wraps to single column when neither fits its min-basis. No media queries. */
 .tt-main-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 16px;
     align-items: flex-start;
 }
-.tt-main-row > .tt-main-col,
+.tt-main-row > .tt-main-col {
+    flex: 7 1 320px;
+    min-width: 0;
+}
 .tt-main-row > .tt-side-col {
+    flex: 3 1 240px;
     min-width: 0;
 }
 
@@ -200,17 +204,12 @@ a {
     flex-wrap: wrap;
 }
 
-/* Card padding adjusts on mobile */
+/* Card with fluid padding — shrinks on narrow viewports without media queries */
 .tt-card {
     background: #fff;
-    padding: 24px;
+    padding: clamp(12px, 2.5vw, 24px);
     border-radius: 4px;
     border: 1px solid #e8e8e8;
-}
-@media (max-width: 576px) {
-    .tt-card {
-        padding: 16px 12px;
-    }
 }
 
 /* Timesheet table wrap: scroll horizontally on small screens */

@@ -141,8 +141,9 @@ function TimerBar() {
             <div
                 style={{
                     display: 'flex',
+                    flexWrap: 'wrap',
                     alignItems: 'center',
-                    padding: '12px 20px',
+                    padding: 'clamp(8px, 1.5vw, 12px) clamp(12px, 2vw, 20px)',
                     gap: 12,
                 }}
             >
@@ -158,7 +159,7 @@ function TimerBar() {
                     onFocus={() => setDescFocused(true)}
                     onBlur={() => setDescFocused(false)}
                     placeholder="What are you working on?"
-                    style={{ flex: 1 }}
+                    style={{ flex: '1 1 200px', minWidth: 0 }}
                     filterOption={(input, option) =>
                         (option?.projectName || '')
                             .toLowerCase()
@@ -295,7 +296,11 @@ function TimerBar() {
                     <div
                         onMouseEnter={() => setProjectHover(true)}
                         onMouseLeave={() => setProjectHover(false)}
-                        style={{ cursor: 'pointer' }}
+                        style={{
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                            whiteSpace: 'nowrap',
+                        }}
                     >
                         {projectId ? (
                             <ProjectSelectedLabel
@@ -391,17 +396,17 @@ function TimerBar() {
                     style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 12,
-                        padding: '10px 16px',
+                        gap: 'clamp(8px, 1.5vw, 12px)',
+                        padding: 'clamp(8px, 1.5vw, 10px) clamp(12px, 2vw, 16px)',
                     }}
                 >
                     <span
                         style={{
                             fontVariantNumeric: 'tabular-nums',
-                            fontSize: 20,
+                            fontSize: 'clamp(15px, 2.4vw, 20px)',
                             fontWeight: 500,
                             color: '#333',
-                            minWidth: 90,
+                            minWidth: 'clamp(60px, 12vw, 90px)',
                         }}
                     >
                         {formatDuration(seconds)}
@@ -642,6 +647,8 @@ function cuPickBtn(active) {
         alignItems: 'center',
         gap: 6,
         height: 28,
+        flexShrink: 0,
+        whiteSpace: 'nowrap',
     };
 }
 

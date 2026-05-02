@@ -31,15 +31,42 @@ export const useStartEntry = () => {
     const toast = useToast();
     return useMutation({
         mutationFn: entries.start,
+        onMutate: async (vars) => {
+            await client.cancelQueries(CURRENT_KEY);
+            const prev = client.getQueryData(CURRENT_KEY);
+            client.setQueryData(CURRENT_KEY, {
+                _id: `optimistic-${Date.now()}`,
+                status: 'running',
+                startTime: new Date().toISOString(),
+                description: vars?.description || '',
+                projectId: vars?.projectId || null,
+                billable: !!vars?.billable,
+                tags: vars?.tags || [],
+                clickupTaskId: vars?.clickupTaskId,
+                clickupTaskTitle: vars?.clickupTaskTitle,
+                clickupListId: vars?.clickupListId,
+                clickupSpaceId: vars?.clickupSpaceId,
+                clickupTeamId: vars?.clickupTeamId,
+                __optimistic: true,
+            });
+            return { prev };
+        },
+        onError: (e, _vars, ctx) => {
+            if (ctx?.prev !== undefined) {
+                client.setQueryData(CURRENT_KEY, ctx.prev);
+            }
+            toast('error', e?.message || 'Could not start timer');
+        },
         onSuccess: (started) => {
             if (started) {
                 client.setQueryData(CURRENT_KEY, started);
             }
+        },
+        onSettled: () => {
             client.invalidateQueries(CURRENT_KEY);
             client.invalidateQueries(LIST_KEY);
             client.invalidateQueries(['report']);
         },
-        onError: (e) => toast('error', e?.message || 'Could not start timer'),
     });
 };
 

@@ -160,11 +160,101 @@ a {
     gap: 24px;
 }
 
-/* Calendar page: main + side */
+/* Calendar page: stacked layout — calendar on top, day entries table below.
+   Day cells render task chips inline (Google-Calendar style). */
 .tt-calendar-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* AntD Calendar cell tweaks: let chips fit, tighten paddings on narrow widths */
+.ant-picker-calendar-date-content {
+    height: auto !important;
+    min-height: clamp(40px, 8vw, 80px) !important;
+    overflow: hidden !important;
+}
+.ant-picker-cell .ant-picker-calendar-date {
+    padding: 4px 6px !important;
+}
+.ant-picker-calendar-date-value {
+    font-size: clamp(11px, 1.4vw, 14px) !important;
+}
+
+/* Day-entries table: grid with intrinsic columns, no media queries.
+   Horizontal scroll on very narrow screens; min-width keeps cols readable. */
+.tt-cal-table {
+    display: flex;
+    flex-direction: column;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.tt-cal-table .tt-cal-row {
+    min-width: 480px;
+}
+.tt-cal-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-    gap: 20px;
+    grid-template-columns:
+        minmax(0, 2fr)
+        minmax(0, 1.2fr)
+        auto
+        auto
+        auto;
+    column-gap: clamp(8px, 1.6vw, 16px);
+    row-gap: 4px;
+    align-items: center;
+    padding: clamp(8px, 1.4vw, 12px) clamp(10px, 2vw, 16px);
+    border-bottom: 1px solid #f0f0f0;
+    font-size: clamp(12px, 1.6vw, 14px);
+}
+.tt-cal-row:last-child {
+    border-bottom: none;
+}
+.tt-cal-head {
+    background: #fafafa;
+    color: #888;
+    font-size: clamp(11px, 1.4vw, 12px);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+.tt-cal-task {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #333;
+    font-weight: 500;
+}
+.tt-cal-project {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+.tt-cal-project-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #555;
+}
+.tt-cal-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.tt-cal-time {
+    color: #888;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    text-align: right;
+}
+.tt-cal-dur {
+    color: #333;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    text-align: right;
 }
 
 /* Generic page header */

@@ -31,7 +31,10 @@ export const useStartEntry = () => {
     const toast = useToast();
     return useMutation({
         mutationFn: entries.start,
-        onSuccess: () => {
+        onSuccess: (started) => {
+            if (started) {
+                client.setQueryData(CURRENT_KEY, started);
+            }
             client.invalidateQueries(CURRENT_KEY);
             client.invalidateQueries(LIST_KEY);
             client.invalidateQueries(['report']);
@@ -45,11 +48,20 @@ export const useStopEntry = () => {
     const toast = useToast();
     return useMutation({
         mutationFn: entries.stop,
-        onSuccess: () => {
+        onSuccess: (stopped) => {
             toast('success', 'Timer stopped');
             client.invalidateQueries(CURRENT_KEY);
             client.invalidateQueries(LIST_KEY);
             client.invalidateQueries(['report']);
+            if (stopped?.clickupTaskId && !stopped?.pushedToClickup) {
+                setTimeout(() => {
+                    client.invalidateQueries(LIST_KEY);
+                    client.invalidateQueries(CURRENT_KEY);
+                }, 2000);
+                setTimeout(() => {
+                    client.invalidateQueries(LIST_KEY);
+                }, 5000);
+            }
         },
         onError: (e) => toast('error', e?.message || 'Could not stop timer'),
     });
